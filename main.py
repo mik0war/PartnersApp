@@ -1,6 +1,6 @@
 import psycopg2
 
-from partner_types import Product, Partner, Sale
+from partner_types import Partner, Sale
 
 connection = psycopg2.connect("dbname=demo "
                                   "host=localhost "
@@ -10,17 +10,16 @@ connection = psycopg2.connect("dbname=demo "
 
 cursor = connection.cursor()
 
-cursor.execute("select * from products")
-product_data_from_db = cursor.fetchall()
-product_data = [Product(x[0], x[3], x[2], x[4]) for x in product_data_from_db]
-
 cursor.execute("select * from partners")
 partner_data_from_db = cursor.fetchall()
 partner_data = [Partner(x[0], x[1], x[2], f'{x[3]} {x[4]} {x[5]}', x[6], x[7], f'{x[8]}, {x[9]}, {x[10]}, {x[11]}, {x[12]}', x[13], x[14]) for x in partner_data_from_db]
 
-cursor.execute("select * from partner_products")
+cursor.execute("SELECT partner, SUM(product_count * products.min_cost) "
+               "FROM partner_products JOIN products "
+               "ON products.product_id = partner_products.product "
+               "GROUP BY partner;")
 sale_data_from_db = cursor.fetchall()
-sale_data = [Sale(x[0], x[2], x[1], x[3]) for x in sale_data_from_db]
+sale_data = [Sale(x[0], x[1]) for x in sale_data_from_db]
 
 
 cursor.close()
@@ -42,22 +41,11 @@ connection.close()
 
 def calculate_discount(partner : Partner):
     ### 1-й блок: получение итогового размера стоимости продаж
-    partner_sale = []
-
+    total_price = 0
     for sale in sale_data:
         if sale.partner == partner.partner_id:
-            partner_sale.append(sale)
-
-    sales_with_products = dict()
-
-    for sale in partner_sale:
-        for product in product_data:
-            if sale.product == product.product_id:
-                sales_with_products[sale] = product
-
-    total_price = 0
-    for sale in partner_sale:
-        total_price += sale.count * sales_with_products[sale].cost
+            total_price = sale.total_price
+            break
 
     ### 2-й блок: получение скидки
     if total_price < 10_000:
