@@ -27,8 +27,6 @@ class Partner:
 
 class Sale:
 
-    def __init__(self, partner, count, price):
+    def __init__(self, partner, total_price):
         self.partner = partner
-        self.count = count
-        self.price = price
-
+        self.total_price = total_price
