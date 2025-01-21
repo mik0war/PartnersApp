@@ -2,28 +2,25 @@ import psycopg2
 
 from partner_types import Partner, Sale
 
-connection = psycopg2.connect("dbname=demo "
+def get_connection():
+    connection = psycopg2.connect("dbname=demo "
                                   "host=localhost "
                                   "port=5432 "
                                   "user=postgres "
                                   "password=root ")
 
-cursor = connection.cursor()
+    cursor = connection.cursor()
 
-cursor.execute("select * from partners")
-partner_data_from_db = cursor.fetchall()
+    return connection, cursor
+
+con, cur = get_connection()
+
+cur.execute("select * from partners")
+partner_data_from_db = cur.fetchall()
 partner_data = [Partner(x[0], x[1], x[2], f'{x[3]} {x[4]} {x[5]}', x[6], x[7], f'{x[8]}, {x[9]}, {x[10]}, {x[11]}, {x[12]}', x[13], x[14]) for x in partner_data_from_db]
 
-cursor.execute("SELECT partner, SUM(product_count * products.min_cost) "
-               "FROM partner_products JOIN products "
-               "ON products.product_id = partner_products.product "
-               "GROUP BY partner;")
-sale_data_from_db = cursor.fetchall()
-sale_data = [Sale(x[0], x[1]) for x in sale_data_from_db]
-
-
-cursor.close()
-connection.close()
+cur.close()
+con.close()
 
 
 """
@@ -39,23 +36,38 @@ connection.close()
 
 """
 
-def calculate_discount(partner : Partner):
+def calculate_discount(partners):
     ### 1-й блок: получение итогового размера стоимости продаж
-    total_price = 0
-    for sale in sale_data:
-        if sale.partner == partner.partner_id:
-            total_price = sale.total_price
-            break
 
-    ### 2-й блок: получение скидки
-    if total_price < 10_000:
-        partner.partner_discount = 0
-    elif 10_000 <= total_price < 50_000:
-        partner.partner_discount = 5
-    elif 50000 <= total_price < 300000:
-        partner.partner_discount = 10
-    else:
-        partner.partner_discount = 15
+    connection, cursor = get_connection()
+
+    cursor.execute("SELECT partner, SUM(product_count * products.min_cost) "
+                   "FROM partner_products JOIN products "
+                   "ON products.product_id = partner_products.product "
+                   "GROUP BY partner;")
+    sale_data_from_db = cursor.fetchall()
+    sale_data = [Sale(x[0], x[1]) for x in sale_data_from_db]
+
+    cursor.close()
+    connection.close()
+
+    for partner in partners:
+        total_price = 0
+        for sale in sale_data:
+            if sale.partner == partner.partner_id:
+                total_price = sale.total_price
+                break
+
+        ### 2-й блок: получение скидки
+        if total_price < 10_000:
+            partner.partner_discount = 0
+        elif 10_000 <= total_price < 50_000:
+            partner.partner_discount = 5
+        elif 50000 <= total_price < 300000:
+            partner.partner_discount = 10
+        else:
+            partner.partner_discount = 15
+
 
 '''
     Алгоритм:
@@ -63,15 +75,8 @@ def calculate_discount(partner : Partner):
     2. Посчитать скидку для каждого
 '''
 
-def calculate_all_discounts():
-    partners = partner_data
-
-    for partner in partners:
-        calculate_discount(partner)
-
 
 if __name__ == '__main__':
-    calculate_all_discounts()
+    calculate_discount(partner_data)
 
-    a=100
 
