@@ -1,6 +1,8 @@
 import psycopg2
 
+from mainwindow2 import setupUI
 from partner_types import Partner, Sale
+
 
 def get_connection():
     connection = psycopg2.connect("dbname=demo "
@@ -12,16 +14,6 @@ def get_connection():
     cursor = connection.cursor()
 
     return connection, cursor
-
-con, cur = get_connection()
-
-cur.execute("select * from partners")
-partner_data_from_db = cur.fetchall()
-partner_data = [Partner(x[0], x[1], x[2], f'{x[3]} {x[4]} {x[5]}', x[6], x[7], f'{x[8]}, {x[9]}, {x[10]}, {x[11]}, {x[12]}', x[13], x[14]) for x in partner_data_from_db]
-
-cur.close()
-con.close()
-
 
 """
 Алгоритм расчета скидок для одного партнёра:
@@ -76,6 +68,20 @@ def calculate_discount(partner):
 
 
 if __name__ == '__main__':
-    calculate_discount(partner_data)
+    con, cur = get_connection()
+
+    cur.execute("select * from partners")
+    partner_data_from_db = cur.fetchall()
+    partner_data = [
+        Partner(x[0], x[1], x[2], f'{x[3]} {x[4]} {x[5]}', x[6], x[7], f'{x[8]}, {x[9]}, {x[10]}, {x[11]}, {x[12]}',
+                x[13], x[14]) for x in partner_data_from_db]
+
+    cur.close()
+    con.close()
+
+    for partner in partner_data:
+        calculate_discount(partner)
+
+    setupUI(partner_data)
 
 
