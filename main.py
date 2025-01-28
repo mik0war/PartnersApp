@@ -1,6 +1,6 @@
 import psycopg2
 
-from mainwindow2 import setupUI
+from mainwindow import setupUI
 from partner_types import Partner, Sale
 
 
