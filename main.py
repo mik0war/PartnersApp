@@ -1,19 +1,6 @@
-import psycopg2
-
 from mainwindow import setupUI
 from partner_types import Partner, Sale
-
-
-def get_connection():
-    connection = psycopg2.connect("dbname=demo "
-                                  "host=localhost "
-                                  "port=5432 "
-                                  "user=postgres "
-                                  "password=root ")
-
-    cursor = connection.cursor()
-
-    return connection, cursor
+from repository import get_connection
 
 """
 Алгоритм расчета скидок для одного партнёра:
@@ -66,8 +53,7 @@ def calculate_discount(partner):
     2. Посчитать скидку для каждого
 '''
 
-
-if __name__ == '__main__':
+def main():
     con, cur = get_connection()
 
     cur.execute("select * from partners")
@@ -83,5 +69,8 @@ if __name__ == '__main__':
         calculate_discount(partner)
 
     setupUI(partner_data)
+
+if __name__ == '__main__':
+    main()
 
 

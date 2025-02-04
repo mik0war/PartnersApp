@@ -20,8 +20,21 @@
       <x>10</x>
       <y>10</y>
       <width>781</width>
-      <height>551</height>
+      <height>471</height>
      </rect>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="pushButton">
+    <property name="geometry">
+     <rect>
+      <x>360</x>
+      <y>520</y>
+      <width>141</width>
+      <height>24</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Добавить партнера</string>
     </property>
    </widget>
   </widget>
