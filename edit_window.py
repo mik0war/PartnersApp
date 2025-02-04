@@ -86,9 +86,18 @@ class Ui_EditWindow(object):
         if partner:
             self.partner = partner
             self.name_view.setText(partner.partner_name)
-            self.first_name_view.setText(partner.partner_director.split()[1])
-            self.second_name_view.setText(partner.partner_director.split()[0])
-            self.sur_name_view.setText(partner.partner_director.split()[2])
+            try:
+                self.first_name_view.setText(partner.partner_director.split()[1])
+            except:
+                self.first_name_view.setText('')
+            try:
+                self.second_name_view.setText(partner.partner_director.split()[0])
+            except:
+                self.second_name_view.setText('')
+            try:
+                self.sur_name_view.setText(partner.partner_director.split()[2])
+            except:
+                self.sur_name_view.setText('')
             self.rating_view.setText(str(partner.partner_rating))
             self.address_view.setText(partner.partner_address)
             self.email_view.setText(partner.partner_address)

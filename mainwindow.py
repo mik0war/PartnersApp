@@ -3,8 +3,10 @@ from PyQt6 import QtCore, QtWidgets
 from PyQt6.QtCore import QSize
 from PyQt6.QtWidgets import QListWidgetItem, QMainWindow, QWidget
 
+import logic
 from edit_window import Ui_EditWindow
 from list_view import PartnerItemWidget
+from repository import get_partners
 
 
 class Ui_MainWindow(object):
@@ -12,11 +14,12 @@ class Ui_MainWindow(object):
         MainWindow.setObjectName("MainWindow")
         MainWindow.setWindowTitle("Подмодуль партнёры")
         MainWindow.resize(800, 600)
-        MainWindow.setWindowIcon(QIcon('icon.png'))
+        MainWindow.setWindowIcon(QIcon('res/icon.png'))
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.edit_window = QWidget()
         self.edit_window_ui = Ui_EditWindow()
         self.edit_window_ui.setupUi(self.edit_window)
+        self.edit_window_ui.back_button.clicked.connect(get_new_partner_data)
         self.centralwidget.setObjectName("centralwidget")
         self.listView = QtWidgets.QListWidget(self.centralwidget)
         self.listView.setGeometry(QtCore.QRect(10, 10, 781, 551))
@@ -56,11 +59,17 @@ class Ui_MainWindow(object):
 
         self.listView.setItemWidget(item, widget)
 
+    def clear_list(self):
+        self.listView.clear()
+
+
+ui = Ui_MainWindow()
+
 def setupUI(partners):
     import sys
     app = QtWidgets.QApplication(sys.argv)
     MainWindow = QtWidgets.QMainWindow()
-    ui = Ui_MainWindow()
+
     ui.setupUi(MainWindow)
 
     for partner in partners:
@@ -69,5 +78,14 @@ def setupUI(partners):
     MainWindow.show()
     app.exec()
     sys.exit(app.exec())
+
+def get_new_partner_data():
+    ui.clear_list()
+    partner_data = get_partners()
+
+    for partner in partner_data:
+        logic.calculate_discount(partner)
+        ui.add_item(partner)
+
 
 

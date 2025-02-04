@@ -1,5 +1,7 @@
 import psycopg2
 
+from partner_types import Partner
+
 
 def get_connection():
     connection = psycopg2.connect("dbname=demo "
@@ -11,6 +13,19 @@ def get_connection():
     cursor = connection.cursor()
 
     return connection, cursor
+
+def get_partners():
+    con, cur = get_connection()
+
+    cur.execute("select * from partners ORDER BY partner_id")
+    partner_data_from_db = cur.fetchall()
+
+    cur.close()
+    con.close()
+
+    return [Partner(x[0], x[1], x[2], f'{x[3]} {x[4]} {x[5]}', x[6], x[7], f'{x[8]}, {x[9]}, {x[10]}, {x[11]}, {x[12]}',
+                x[13], x[14]) for x in partner_data_from_db]
+
 
 
 def create_new_partner(partner_type,
@@ -88,6 +103,15 @@ def update_partner(id, partner_type,
                     address.split(', ')[3], address.split(', ')[4],
                     '0', rating, id
                     ])
+    connection.commit()
+
+    cursor.close()
+    connection.close()
+
+def delete_partner(partner_id: int):
+    connection, cursor = get_connection()
+
+    cursor.execute('DELETE FROM partners WHERE partner_id = %(id)d', {'id': partner_id})
     connection.commit()
 
     cursor.close()
